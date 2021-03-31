@@ -1,151 +1,96 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { resetRouter } from '@/router'
+import { shuju } from '@/store/mooni/shuju'
 
-const getDefaultState = () => {
-  return {
+const user = {
+  state: {
     token: getToken(),
     name: '',
     avatar: '',
-    menus: ''
-  }
-}
-
-const state = getDefaultState()
-
-const mutations = {
-  RESET_STATE: (state) => {
-    Object.assign(state, getDefaultState())
+    roles: []
   },
-  SET_TOKEN: (state, token) => {
-    state.token = token
+  mutations: {
+    SET_TOKEN: (state, token) => {
+      state.token = token
+    },
+    SET_NAME: (state, name) => {
+      state.name = name
+    },
+    SET_AVATAR: (state, avatar) => {
+      state.avatar = avatar
+    },
+    SET_ROLES: (state, roles) => {
+      state.roles = roles
+    }
   },
-  SET_NAME: (state, name) => {
-    state.name = name
-  },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
-  },
-  SET_MENUS: (state, menus) => {
-    state.menus = menus
-  }
-}
-
-const actions = {
-  // user login 用户登录获取相关的tokenStr；
-  login({ commit }, userInfo) {
-    const { username, password } = userInfo
-    return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        const tokenStr = data.tokenHead+" "+data.token
-        setToken(tokenStr) //获取的tokenStr保存到js-cookie中;
-        commit('SET_TOKEN', tokenStr)
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
-
-  // get user info
-  getInfo({ commit, state }) {
-    return new Promise((resolve, reject) => {
-      getInfo(8).then(response => {
-        const { data } = response
-
-        if (!data) {
-          return reject('Verification failed, please Login again.')
-        }
-
-        const { name, avatar } = data
-        // 模拟请求数据
-        const menus = [
-          {
-            'path': '/system',
-            'redirect': '/menu',
-            'component': 'Layout',
-            'meta': {
-              'title': '系统管理',
-              'icon': 'form'
-            },
-            'children': [{
-              'path': '/menu',
-              'name': 'menu',
-              'component': 'menu/index',
-              'meta': {
-                'title': '菜单管理',
-                'icon': 'table'
-              }
-            },
-              {
-                'path': '/roles',
-                'name': 'roles',
-                'component': 'roles/index',
-                'meta': {
-                  'title': '角色管理',
-                  'icon': 'table'
-                }
-              },
-              {
-                'path': '/administrator',
-                'name': 'administrator',
-                'component': 'dashboard/index',
-                'meta': {
-                  'title': '用户管理',
-                  'icon': 'table'
-                }
-              }
-            ]
-          }
-        ]
-        menus.push({
-          path: '/404',
-          component: '404',
-          hidden: true
-        }, {
-          path: '*',
-          redirect: '/404',
-          hidden: true
+  actions: {
+    // 登录
+    login({ commit }, userInfo) { // actions的第一个参数为context 上下文 {commit}==actions.commit
+      const username = userInfo.username.trim()// 去除空格
+      return new Promise((resolve, reject) => {
+        // 传给相关服务接口
+        login(username, userInfo.password).then(response => {
+          // 获取用户基本信息
+          const data = response.data
+          // 拼接相关token相关信息
+          const tokenStr = data.tokenHead + '" " ' + data.token
+          // 保存相关 token
+          setToken(tokenStr)
+          // 修改state的相关值
+          commit('SET_TOKEN', tokenStr)
+          resolve()
+        }).catch(error => {
+          reject(error)
         })
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
-        commit('SET_MENUS', menus) // 触发vuex SET_MENUS 保存路由表到vuex
-        resolve(data)
-      }).catch(error => {
-        reject(error)
       })
-    })
-  },
+    },
 
-  // user logout
-  logout({ commit, state }) {
-    return new Promise((resolve, reject) => {
-      logout(state.token).then(() => {
-        removeToken() // must remove  token  first
-        resetRouter()
-        commit('RESET_STATE')
+    // 获取用户信息
+    getInfo({ commit, state }, udrtId) {
+      return new Promise((resolve, reject) => {
+        getInfo(udrtId).then(response => {
+          // 获取后台返回的用户权限相关信息
+          // const { data } = response
+          const { data } = shuju
+          if (data.roles && data.roles.length > 0) { // 验证返回的roles是否是一个非空数组
+            // 修改修改state的相关值
+            commit('SET_ROLES', data.roles)
+            // resolve(response)
+            resolve(shuju) // 模拟数据
+          } else {
+            reject('getInfo: roles must be a non-null array !')
+          }
+          // 修改state的相关值
+          commit('SET_NAME', data.username)
+          commit('SET_AVATAR', data.icon)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 登出
+    logOut({ commit, state }) {
+      return new Promise((resolve, reject) => {
+        logout(state.token).then(() => {
+          commit('SET_TOKEN', '')
+          commit('SET_ROLES', [])
+          removeToken()
+          resolve()
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 前端登出
+    fedLogOut({ commit }) {
+      return new Promise(resolve => {
+        commit('SET_TOKEN', '')
+        removeToken()
         resolve()
-      }).catch(error => {
-        reject(error)
       })
-    })
-  },
-
-  // remove token
-  removeToken({ commit }) {
-    return new Promise(resolve => {
-      removeToken() // must remove  token  first
-      commit('RESET_STATE')
-      resolve()
-    })
+    }
   }
 }
 
-export default {
-  namespaced: true,
-  state,
-  mutations,
-  actions
-}
+export default user
 

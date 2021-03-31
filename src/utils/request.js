@@ -5,20 +5,17 @@ import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
+  baseURL: process.env.VUE_APP_BASE_API, // api的base_url
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000 // request timeout
+  timeout: 5000 // 请求超时的时间
 })
 
-// request interceptor
+// request拦截器
 service.interceptors.request.use(
   config => {
-    // do something before request is sent
-
+    // 添加相关的token
     if (store.getters.token) {
-      // let each request carry token
-      // ['X-Token'] is a custom headers key
-      // please modify it according to the actual situation
+      // 让每个请求携带自定义token 请根据实际情况自行修改
       config.headers['Authorization'] = getToken()
     }
     return config
@@ -30,38 +27,29 @@ service.interceptors.request.use(
   }
 )
 
-// response interceptor
+// response 拦截器
 service.interceptors.response.use(
-  /**
-   * If you want to get http information such as headers or status
-   * Please return  response => response
-  */
-
-  /**
-   * Determine the request status by custom code
-   * Here is just an example
-   * You can also judge the status by HTTP Status Code
-   */
   response => {
     const res = response.data
-
-    // if the custom code is not 20000, it is judged as an error.
+    /**
+     * code为非200是抛错 可结合自己业务进行修改
+     */
     if (res.code !== 200) {
       Message({
         message: res.message || 'Error',
         type: 'error',
         duration: 5 * 1000
       })
-
-      // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
+      // 401:未登录;
       if (res.code === 400 || res.code === 403 || res.code === 401) {
-        // to re-login
-        MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
-          confirmButtonText: 'Re-Login',
-          cancelButtonText: 'Cancel',
+        MessageBox.confirm('你已被登出，可以取消继续留在该页面，或者重新登录', 'Confirm logout', {
+          confirmButtonText: '重新登录',
+          cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          // 清除以前相关的Token
           store.dispatch('user/resetToken').then(() => {
+            // 为了重新实例化vue-router对象 避免bug
             location.reload()
           })
         })

@@ -1,6 +1,11 @@
 import request from '@/utils/request'
 
-export function login(data) {
+/**
+ * 登录返回相关tonken
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function login(data, password) {
   return request({
     url: '/admin/login/',
     method: 'post',
@@ -8,9 +13,14 @@ export function login(data) {
   })
 }
 
+/**
+ * 获取相关人员相关权限
+ * @param token
+ * @returns {AxiosPromise}
+ */
 export function getInfo(token) {
   return request({
-    url: '/admin/permission/8',
+    url: '/admin/permission/3',
     method: 'get',
   })
 }
