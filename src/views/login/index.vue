@@ -112,7 +112,7 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
+          this.$store.dispatch('login', this.loginForm).then(() => {
             this.$router.push({ path: '/' })
             setCookie('username', this.loginForm.username, 15)
             setCookie('password', this.loginForm.password, 15)

@@ -5,7 +5,7 @@ import request from '@/utils/request'
  * @param data
  * @returns {AxiosPromise}
  */
-export function login(data, password) {
+export function login(data) {
   return request({
     url: '/admin/login/',
     method: 'post',

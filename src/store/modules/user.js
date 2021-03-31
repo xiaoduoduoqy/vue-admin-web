@@ -1,6 +1,5 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { shuju } from '@/store/mooni/shuju'
 
 const user = {
   state: {
@@ -29,7 +28,7 @@ const user = {
       const username = userInfo.username.trim()// 去除空格
       return new Promise((resolve, reject) => {
         // 传给相关服务接口
-        login(username, userInfo.password).then(response => {
+        login(userInfo).then(response => {
           // 获取用户基本信息
           const data = response.data
           // 拼接相关token相关信息
@@ -50,13 +49,13 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo(udrtId).then(response => {
           // 获取后台返回的用户权限相关信息
-          // const { data } = response
-          const { data } = shuju
+          const { data } = response
+          data.roles = ['超级管理员']
+          data.icon = 'http://macro-oss.oss-cn-shenzhen.aliyuncs.com/mall/images/20180607/timg.jpg'
           if (data.roles && data.roles.length > 0) { // 验证返回的roles是否是一个非空数组
             // 修改修改state的相关值
             commit('SET_ROLES', data.roles)
-            // resolve(response)
-            resolve(shuju) // 模拟数据
+            resolve(response)
           } else {
             reject('getInfo: roles must be a non-null array !')
           }

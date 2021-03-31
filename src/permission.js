@@ -4,6 +4,7 @@ import { Message } from 'element-ui'
 import NProgress from 'nprogress' //  Progress 进度条
 import 'nprogress/nprogress.css' // Progress 进度条样式
 import { getToken } from '@/utils/auth' //  验权
+import { caidan } from '@/store/mooni/shuju'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -24,16 +25,19 @@ router.beforeEach(async(to, from, next) => {
       if (store.getters.roles.length === 0) {
         store.dispatch('getInfo').then(res => { // 拉取用户信息
           // 获取menus
+          res = caidan // 写入模拟数据
+          console.log(res)
           const menus = res.data.menus
           // 获取username
           const username = res.data.username
           store.dispatch('GenerateRoutes', { menus, username }).then(() => { // 生成可访问的路由表
+            console.log(store.getters.addRouters)
             router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表
             next({ ...to, replace: true })
           })
         }).catch((err) => {
           store.dispatch('fedLogOut').then(() => {
-            Message.error(err || 'Verification failed, please login again')
+            Message.error('Verification failed, please login again')
             next({ path: '/' })
           })
         })

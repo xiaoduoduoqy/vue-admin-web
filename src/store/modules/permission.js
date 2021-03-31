@@ -2,7 +2,8 @@ import { asyncRouterMap, constantRouterMap } from '@/router/index'
 
 // 判断是否有权限访问该菜单
 function hasPermission(menus, route) {
-  if (route.name) {
+  if (route.name) {// 判断存不存
+    // 根据路由名称获取菜单
     let currMenu = getMenu(route.name, menus)
     if (currMenu != null) {
       // 设置菜单的标题、图标和可见性
@@ -96,6 +97,11 @@ const permission = {
           }
           return false
         })
+        // 对菜单进行排序
+        console.log(accessedRouters)
+        sortRouters(accessedRouters)
+        commit('SET_ROUTERS', accessedRouters)
+        resolve()
       })
     }
   }
