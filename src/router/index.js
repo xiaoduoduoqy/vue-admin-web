@@ -58,6 +58,16 @@ export const asyncRouterMap = [
       name: 'product',
       component: () => import('@/views/pms/product/index'),
       meta: { title: '商品列表', icon: 'product-list' }
+    }, {
+      path: 'addProduct',
+      name: 'addProduct',
+      component: () => import('@/views/pms/product/add'),
+      meta: { title: '添加商品', icon: 'product-add' }
+    }, {
+      path: 'updateProduct',
+      name: 'updateProduct',
+      component: () => import('@/views/pms/product/update'),
+      meta: { title: '修改商品', icon: 'product-add' }
     }]
   },
   { path: '*', redirect: '/404', hidden: true }

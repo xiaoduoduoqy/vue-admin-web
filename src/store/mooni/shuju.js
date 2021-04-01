@@ -45,11 +45,11 @@ export const caidan = {
         'id': 4,
         'parentId': 1,
         'createTime': '2020-02-02T06:53:51.000+00:00',
-        'title': '商品分类',
+        'title': '修改商品',
         'level': 1,
         'sort': 0,
-        'name': 'productCate',
-        'icon': 'product-cate',
+        'name': 'updateProduct',
+        'icon': 'product-add',
         'hidden': 0
       },
       {
